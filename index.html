@@ -19,7 +19,7 @@ html, body {
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: center; 
+  justify-content: center;
 }
 
 .player {
@@ -48,4 +48,101 @@ video {
 .arrow.right { right: -40px; }
 
 .arrow:hover {
-  colo
+  color: rgba(220,220,220,0.9);
+}
+
+/* slider */
+.slider {
+  position: absolute;
+  bottom: -28px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(200,200,200,0.25);
+}
+
+.slider-fill {
+  height: 100%;
+  width: 0%;
+  background: rgba(200,200,200,0.7);
+  transition: width 0.1s linear;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="player">
+
+    <!-- VIDEO (no src here, set by JS) -->
+    <video id="video" muted playsinline preload="auto"></video>
+
+    <!-- ARROWS -->
+    <div class="arrow left" id="left">&#8592;</div>
+    <div class="arrow right" id="right">&#8594;</div>
+
+    <!-- SLIDER -->
+    <div class="slider">
+      <div class="slider-fill" id="slider"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const video = document.getElementById("video");
+const slider = document.getElementById("slider");
+const left = document.getElementById("left");
+const right = document.getElementById("right");
+
+/* --- minimal click sound --- */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const ctx = new AudioCtx();
+
+function clickSound() {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "square";
+  osc.frequency.value = 850;
+  gain.gain.value = 0.03;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.025);
+}
+
+/* --- update slider --- */
+video.addEventListener("timeupdate", () => {
+  if (!video.duration) return;
+  slider.style.width = (video.currentTime / video.duration) * 100 + "%";
+});
+
+/* --- play helper --- */
+function play(src) {
+  video.pause();
+  video.src = src;          // relative to /docs
+  video.load();
+
+  video.onloadedmetadata = () => {
+    video.currentTime = 0;
+    slider.style.width = "0%";
+    video.play();
+  };
+}
+
+/* RIGHT → forward video */
+right.onclick = () => {
+  clickSound();
+  play("horses2.mp4");
+};
+
+/* LEFT → rewind video */
+left.onclick = () => {
+  clickSound();
+  play("horses2rewind.mp4");
+};
+</script>
+
+</body>
+</html>
