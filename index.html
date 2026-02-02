@@ -20,31 +20,18 @@ body {
   justify-content: center;
 }
 
+/* conteneur centré */
 .player {
   position: relative;
+  display: inline-block;
 }
 
-.video-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
+/* vidéo */
 video {
   max-width: 80vw;
   max-height: 80vh;
   display: block;
   background: black;
-}
-
-/* visibilité */
-.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.visible {
-  opacity: 1;
 }
 
 /* flèches */
@@ -87,25 +74,7 @@ video {
 
 <div class="player">
 
-  <!-- VIDEO AVANT -->
-  <video
-    id="videoForward"
-    class="video-layer visible"
-    src="horses2.mp4"
-    muted
-    playsinline
-    preload="auto"
-  ></video>
-
-  <!-- VIDEO REWIND -->
-  <video
-    id="videoRewind"
-    class="video-layer hidden"
-    src="horses2rewind.mp4"
-    muted
-    playsinline
-    preload="auto"
-  ></video>
+  <video id="video" muted playsinline preload="auto"></video>
 
   <div class="arrow left" id="left">&#8592;</div>
   <div class="arrow right" id="right">&#8594;</div>
@@ -117,13 +86,12 @@ video {
 </div>
 
 <script>
-const forward = document.getElementById("videoForward");
-const rewind  = document.getElementById("videoRewind");
-const left    = document.getElementById("left");
-const right   = document.getElementById("right");
-const slider  = document.getElementById("slider");
+const video  = document.getElementById("video");
+const left   = document.getElementById("left");
+const right  = document.getElementById("right");
+const slider = document.getElementById("slider");
 
-/* clic sonore minimal */
+/* clic minimal */
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const ctx = new AudioCtx();
 
@@ -132,46 +100,42 @@ function clickSound() {
   const gain = ctx.createGain();
   osc.type = "square";
   osc.frequency.value = 900;
-  gain.gain.value = 0.025;
+  gain.gain.value = 0.03;
   osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start();
-  osc.stop(ctx.currentTime + 0.025);
+  osc.stop(ctx.currentTime + 0.03);
 }
 
-/* sync temps */
-function syncVideos(source, target) {
-  target.currentTime = source.currentTime;
-}
-
-/* slider update */
-forward.addEventListener("timeupdate", () => {
-  if (!forward.duration) return;
-  slider.style.width = (forward.currentTime / forward.duration) * 100 + "%";
+/* slider */
+video.addEventListener("timeupdate", () => {
+  if (!video.duration) return;
+  slider.style.width = (video.currentTime / video.duration) * 100 + "%";
 });
 
-/* droite */
+/* lecture sans flash */
+function play(src) {
+  const t = video.currentTime || 0;
+  video.src = src;
+  video.currentTime = t;
+  video.play();
+}
+
+/* flèche droite */
 right.onclick = () => {
   clickSound();
-  syncVideos(rewind, forward);
-  rewind.pause();
-  rewind.classList.add("hidden");
-  forward.classList.remove("hidden");
-  forward.play();
+  play("horses2.mp4");
 };
 
-/* gauche */
+/* flèche gauche */
 left.onclick = () => {
   clickSound();
-  syncVideos(forward, rewind);
-  forward.pause();
-  forward.classList.add("hidden");
-  rewind.classList.remove("hidden");
-  rewind.play();
+  play("horses2rewind.mp4");
 };
 
 /* démarrage */
-forward.play();
+video.src = "horses2.mp4";
+video.play();
 </script>
 
 </body>
