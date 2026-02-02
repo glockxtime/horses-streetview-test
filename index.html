@@ -22,7 +22,6 @@ body {
 
 .player {
   position: relative;
-  display: inline-block;
 }
 
 video {
@@ -43,6 +42,7 @@ video {
   user-select: none;
 }
 
+/* ⬅️⬅️⬅️ SEULE MODIF ICI */
 .arrow.left  { left: -120px; }
 .arrow.right { right: -120px; }
 
@@ -89,42 +89,55 @@ const left   = document.getElementById("left");
 const right  = document.getElementById("right");
 const slider = document.getElementById("slider");
 
-/* slider sync */
+/* clic sonore minimal */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const ctx = new AudioCtx();
+
+function clickSound() {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "square";
+  osc.frequency.value = 900;
+  gain.gain.value = 0.03;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.03);
+}
+
+/* slider */
 video.addEventListener("timeupdate", () => {
   if (!video.duration) return;
   slider.style.width = (video.currentTime / video.duration) * 100 + "%";
 });
 
-/* STOP à la fin */
-video.addEventListener("ended", () => {
-  video.pause();
-});
-
-/* play helper — SIMPLE */
-function play(src) {
+/* lecture */
+function playVideo(src) {
   video.pause();
   video.src = src;
   video.load();
-  slider.style.width = "0%";
 
-  video.onloadeddata = () => {
+  video.onloadedmetadata = () => {
     video.currentTime = 0;
+    slider.style.width = "0%";
     video.play();
   };
 }
 
-/* droite → vidéo forward */
+/* flèche droite → vidéo normale */
 right.onclick = () => {
-  play("horses2.mp4");
+  clickSound();
+  playVideo("horses2.mp4");
 };
 
-/* gauche → vidéo rewind */
+/* flèche gauche → vidéo rewind */
 left.onclick = () => {
-  play("horses2rewind.mp4");
+  clickSound();
+  playVideo("horses2rewind.mp4");
 };
 
-/* état initial */
-play("horses2.mp4");
+/* démarre avec la vidéo normale */
+playVideo("horses2.mp4");
 </script>
 
 </body>
